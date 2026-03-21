@@ -3,212 +3,223 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copa do Mundo FIFA 2026 — Fase de Grupos</title>
+<title>Copa do Mundo FIFA 2026 — Explorador Interativo</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#06060c;--bg2:#0c0c16;--card:#10101c;--card2:#161625;
   --border:#1a1a30;--border2:#252545;
-  --text:#556;--text2:#889;--text-hi:#eef;
+  --text:#667;--text2:#99a;--text-hi:#eef;
   --accent:#8b5cf6;--accent2:#06b6d4;
-  --glow:rgba(139,92,246,0.5);
-  --r:8px;
+  --glow:rgba(139,92,246,0.4);
+  --r:10px;
 }
 html,body{height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;
   background:var(--bg);color:var(--text);font-size:13px;line-height:1.4}
 
-/* PAGE LAYOUT: full viewport grid */
-.page{display:grid;height:100vh;width:100vw;
+/* ===== MAIN GRID ===== */
+.app{display:grid;height:100vh;width:100vw;
   grid-template-rows:auto 1fr auto;
-  grid-template-areas:"header" "main" "filters";
-  gap:0;padding:4px 8px}
+  grid-template-columns:minmax(260px,1fr) 2.5fr minmax(200px,240px);
+  grid-template-areas:
+    "header header header"
+    "teams  stage  sidebar"
+    "venues venues venues";
+  gap:6px;padding:6px 10px}
 
-/* HEADER */
+/* ===== HEADER ===== */
 .header{grid-area:header;display:flex;align-items:center;justify-content:space-between;
-  padding:4px 10px;min-height:0;gap:10px}
-.header-left{display:flex;align-items:center;gap:10px}
-.header h1{font-size:15px;font-weight:700;letter-spacing:-.02em;
+  padding:4px 8px}
+.header h1{font-size:16px;font-weight:700;
   background:linear-gradient(135deg,#a78bfa,#06b6d4);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
-.header-stats{display:flex;gap:12px;align-items:center}
-.hstat{text-align:center;line-height:1.1}
-.hstat b{font-size:14px;color:var(--text-hi);display:block}
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-stats{display:flex;gap:16px;align-items:center}
+.hstat{display:flex;align-items:baseline;gap:3px}
+.hstat b{font-size:15px;color:var(--text-hi)}
 .hstat small{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--text);opacity:.6}
+.header-hint{font-size:9px;color:var(--text);opacity:.35;font-style:italic}
 
-/* TABS */
-.tabs{display:flex;gap:4px;align-items:center}
-.tab{padding:4px 14px;border:1px solid var(--border);border-radius:14px;
-  font-size:10px;font-weight:600;color:var(--text);cursor:default;
-  transition:all .25s ease;background:var(--card);white-space:nowrap;position:relative}
-.tab:hover{border-color:var(--accent);color:var(--text-hi);box-shadow:0 0 10px var(--glow)}
-.tab.active{border-color:var(--accent);color:var(--accent);background:rgba(139,92,246,0.08);
-  box-shadow:0 0 12px var(--glow)}
-.cross-badge{display:none;position:absolute;top:-6px;right:-4px;
-  background:var(--accent);color:#fff;font-size:7px;font-weight:700;
-  padding:1px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;
-  animation:pulse 1.5s ease infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+/* ===== TEAMS PANEL (left) ===== */
+.teams-panel{grid-area:teams;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:8px;overflow:hidden;display:flex;flex-direction:column}
+.panel-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--accent);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.teams-grid{display:grid;grid-template-columns:16px repeat(4,1fr);gap:2px 3px;
+  align-content:start;overflow:hidden}
+.tgl{font-size:9px;font-weight:700;color:var(--accent);opacity:.4;
+  display:flex;align-items:center;justify-content:center;
+  cursor:default;transition:all .25s ease;border-radius:4px}
+.tgl:hover,.tgl.highlighted{opacity:1;background:rgba(139,92,246,0.1)}
+.tgl.dimmed{opacity:.08}
+.ti{display:flex;align-items:center;gap:3px;padding:2px 4px;border-radius:5px;
+  cursor:default;transition:all .25s ease;font-size:9px;color:var(--text2);
+  border:1px solid transparent;white-space:nowrap;overflow:hidden}
+.ti:hover,.ti.highlighted{color:var(--text-hi);background:rgba(139,92,246,0.1);
+  border-color:var(--accent);transform:scale(1.06);z-index:2;position:relative;
+  box-shadow:0 0 10px var(--glow)}
+.ti.dimmed{opacity:.1;filter:blur(0.3px)}
+.ti .fl{font-size:12px;line-height:1;flex-shrink:0}
 
-.header-right{display:flex;align-items:center;gap:8px}
-.header-hint{font-size:8px;color:var(--text);opacity:.5;white-space:nowrap}
-.net-toggle{padding:3px 10px;border:1px solid var(--border);border-radius:12px;
-  font-size:9px;color:var(--text);cursor:default;transition:all .25s ease;background:var(--card)}
-.net-toggle:hover{border-color:var(--accent);color:var(--text-hi);box-shadow:0 0 10px var(--glow)}
-.net-toggle.active{border-color:var(--accent);color:var(--accent)}
+/* ===== STAGE (center detail panel) ===== */
+.stage{grid-area:stage;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:var(--r);background:var(--card)}
+.stage-empty{text-align:center;color:var(--text);opacity:.2;
+  transition:opacity .3s ease;user-select:none}
+.stage-empty .icon{font-size:52px;display:block;margin-bottom:10px}
+.stage-empty .txt{font-size:11px;line-height:1.6}
+.stage-empty.hidden{opacity:0;pointer-events:none}
+.dp{position:absolute;inset:0;padding:16px 20px;overflow-y:auto;
+  opacity:0;transform:translateY(8px);transition:all .25s ease;pointer-events:none}
+.dp.visible{opacity:1;transform:translateY(0);pointer-events:auto}
 
-/* MAIN GROUPS GRID — 3 cols × 2 rows for 6 groups per page */
-.main{grid-area:main;display:grid;grid-template-columns:repeat(3,1fr);
-  grid-template-rows:repeat(2,1fr);gap:6px;min-height:0;overflow:hidden}
+/* Detail content */
+.dh{display:flex;align-items:center;gap:12px;margin-bottom:14px;
+  padding-bottom:10px;border-bottom:1px solid var(--border)}
+.dh .big{font-size:38px;line-height:1}
+.dh .info{}
+.dh .title{font-size:20px;font-weight:700;color:var(--text-hi);line-height:1.2}
+.dh .sub{font-size:10px;color:var(--accent);margin-top:2px}
+.ds{margin-bottom:14px}
+.ds-title{font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--accent2);margin-bottom:8px}
+.d-teams{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.d-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;
+  background:var(--card2);border:1px solid var(--border);border-radius:8px;
+  font-size:11px;color:var(--text2);font-weight:600}
+.d-chip .cf{font-size:18px}
+.mc{display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  border-left:3px solid var(--city-color,var(--accent));
+  margin-bottom:5px;transition:all .2s ease;
+  animation:slideIn .3s ease both;animation-delay:calc(min(var(--i,0),10) * 0.035s)}
+.mc:hover{border-color:var(--accent);background:rgba(139,92,246,0.04);transform:scale(1.01)}
+.mc .mt{font-weight:600;color:var(--text-hi);display:flex;align-items:center;gap:4px;font-size:12px}
+.mc .mf{font-size:15px}
+.mc .vs{color:var(--accent);font-size:10px;margin:0 2px}
+.mc .mm{margin-left:auto;display:flex;gap:10px;font-size:9px;color:var(--text);
+  white-space:nowrap;flex-shrink:0}
+.mc .mv{color:var(--city-color,var(--text2));font-weight:600}
+.mc .md{min-width:40px}
+/* Standings table */
+.st{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:4px}
+.st th{text-align:left;font-size:8px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--accent);padding:3px 6px;border-bottom:1px solid var(--border)}
+.st th:not(:first-child):not(:nth-child(2)){text-align:center}
+.st td{padding:4px 6px;border-bottom:1px solid rgba(26,26,48,0.5);color:var(--text2)}
+.st td:not(:first-child):not(:nth-child(2)){text-align:center;font-family:'Courier New',monospace;font-size:9px}
+.st td:first-child{font-size:9px;color:var(--text);opacity:.5}
+.st td:nth-child(2){font-weight:600;color:var(--text-hi)}
+.st .pts{color:var(--accent);font-weight:700}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* GROUP CARD */
-.group-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-  display:flex;flex-direction:column;min-height:0;overflow:hidden;
-  transition:all .25s ease;position:relative}
-.group-card.highlighted{border-color:var(--accent)!important;
-  box-shadow:0 0 20px var(--glow)!important;z-index:5;transform:scale(1.01)}
-.group-card.dimmed{opacity:.12!important;filter:blur(0.5px)!important}
-.group-card[data-page="2"]{display:none}
-
-/* GROUP HEADER */
-.gh{display:flex;align-items:center;justify-content:space-between;
-  padding:4px 8px 3px;border-bottom:1px solid var(--border);flex-shrink:0}
-.gl{font-size:13px;font-weight:700;
+/* ===== SIDEBAR (right) ===== */
+.sidebar{grid-area:sidebar;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.groups-panel,.times-panel{background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:8px}
+.groups-panel{flex:1}
+.groups-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.gi{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:6px 4px;border-radius:8px;cursor:default;
+  background:var(--card2);border:1px solid var(--border);
+  transition:all .25s ease;gap:2px}
+.gi .gl{font-size:11px;font-weight:700;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.gt{font-size:7px;color:var(--text);opacity:.3}
+.gi .gf{font-size:9px;line-height:1.2;text-align:center}
+.gi:hover,.gi.highlighted{border-color:var(--accent);
+  background:rgba(139,92,246,0.1);transform:scale(1.05);z-index:2;
+  box-shadow:0 0 15px var(--glow)}
+.gi.dimmed{opacity:.1;filter:blur(0.3px)}
+.times-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.tmi{display:flex;align-items:center;justify-content:center;
+  padding:8px;border-radius:8px;cursor:default;
+  background:var(--card2);border:1px solid var(--border);
+  font-size:14px;font-weight:700;font-family:'Courier New',monospace;
+  color:var(--text2);transition:all .25s ease;letter-spacing:.05em}
+.tmi:hover,.tmi.highlighted{border-color:var(--accent);
+  color:var(--text-hi);background:rgba(139,92,246,0.1);
+  box-shadow:0 0 12px var(--glow)}
+.tmi.dimmed{opacity:.1;filter:blur(0.3px)}
 
-/* TEAMS ROW */
-.tr{display:flex;flex-wrap:wrap;gap:3px;padding:3px 7px;flex-shrink:0}
-.tb{display:inline-flex;align-items:center;gap:3px;
-  padding:2px 6px;border-radius:5px;font-size:10px;font-weight:600;
-  background:var(--card2);border:1px solid transparent;
-  cursor:default;color:var(--text2);transition:all .25s ease;white-space:nowrap}
-.tb.highlighted{color:var(--text-hi)!important;border-color:var(--accent)!important;
-  background:rgba(139,92,246,0.15)!important;box-shadow:0 0 8px var(--glow)!important;
-  transform:scale(1.15);z-index:10;position:relative}
-.tb.dimmed{opacity:.12!important;filter:blur(0.5px)!important}
-.tf{font-size:13px;line-height:1}
+/* ===== VENUES BAR (bottom) ===== */
+.venues-bar{grid-area:venues;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:6px 10px;display:flex;gap:4px;align-items:center;
+  overflow:hidden;flex-wrap:wrap}
+.vl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--accent);white-space:nowrap;flex-shrink:0;margin-right:4px}
+.vi{display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:8px;cursor:default;
+  border:1px solid var(--border);font-size:9px;color:var(--text2);
+  border-left:3px solid var(--city-color,var(--border));
+  transition:all .25s ease;white-space:nowrap;flex-shrink:0}
+.vi:hover,.vi.highlighted{
+  border-color:color-mix(in srgb,var(--city-color,var(--accent)) 50%,var(--border));
+  color:var(--text-hi);background:rgba(139,92,246,0.04);
+  box-shadow:0 0 8px color-mix(in srgb,var(--city-color,var(--accent)) 25%,transparent);
+  transform:scale(1.06);z-index:2;position:relative}
+.vi.dimmed{opacity:.1;filter:blur(0.3px)}
+.vi .vn{font-weight:600;color:var(--city-color,var(--text2))}
+.vi .vc{color:var(--text);font-size:8px}
 
-/* MATCHES LIST */
-.ml{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;padding:3px 6px 4px}
-.mc{display:flex;align-items:center;gap:4px;padding:3px 6px;
-  border-radius:5px;cursor:default;font-size:10px;
-  background:var(--bg2);border-left:3px solid var(--city-color,var(--border));
-  transition:all .25s ease;position:relative;min-height:0;flex-shrink:0}
-.mc.highlighted{background:rgba(139,92,246,0.08)!important;
-  border-left-color:var(--city-color,var(--accent))!important;
-  box-shadow:0 0 10px rgba(139,92,246,0.15)!important;
-  transform:scale(1.06);z-index:10;position:relative;
-  color:var(--text-hi)!important}
-.mc.dimmed{opacity:.12!important;filter:blur(0.5px)!important}
-.mt{font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:3px}
-.mt .f{font-size:12px}
-.mv{color:var(--accent);font-size:9px;margin:0 1px}
-.mm{margin-left:auto;display:flex;gap:5px;font-size:8px;color:var(--text);white-space:nowrap;flex-shrink:0}
-.mm .ct{color:var(--city-color,var(--text));font-weight:600}
+/* Scrollbar */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-/* FILTERS BAR */
-.filters{grid-area:filters;display:flex;gap:8px;align-items:flex-start;
-  padding:4px 8px;background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);min-height:0;overflow:hidden;flex-wrap:nowrap}
-.fs{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.fs:not(:last-child){border-right:1px solid var(--border);padding-right:8px}
-.fl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-  color:var(--accent);white-space:nowrap;flex-shrink:0}
-.fc{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
-.ch{padding:2px 6px;border-radius:10px;font-size:8px;font-weight:500;
-  border:1px solid var(--border);color:var(--text2);cursor:default;
-  background:transparent;white-space:nowrap;transition:all .25s ease;position:relative}
-.ch.cc{border-color:color-mix(in srgb,var(--city-color) 25%,var(--border));color:var(--city-color)}
-.ch.sc{border-left:2px solid var(--city-color,var(--border));font-size:7.5px}
-.ch.dc{min-width:28px;text-align:center;font-size:8px}
-.ch.tc{font-family:'Courier New',monospace;font-weight:700;letter-spacing:.03em}
-.ch.highlighted{border-color:var(--city-color,var(--accent))!important;
-  color:var(--text-hi)!important;
-  background:color-mix(in srgb,var(--city-color,var(--accent)) 12%,transparent)!important;
-  box-shadow:0 0 8px color-mix(in srgb,var(--city-color,var(--accent)) 30%,transparent)!important;
-  transform:scale(1.2);z-index:10;position:relative}
-.ch.dimmed{opacity:.12!important;filter:blur(0.5px)!important}
-
-/* NETWORK */
-.network-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:rgba(6,6,12,0.95);z-index:100}
-.network-overlay.visible{display:block}
-.network-overlay canvas{width:100%;height:100%}
-.net-legend{position:absolute;top:10px;right:10px;font-size:9px;color:var(--text);
-  background:rgba(16,16,28,0.9);padding:8px 10px;border-radius:6px;border:1px solid var(--border)}
-.net-legend div{display:flex;align-items:center;gap:5px;margin-bottom:3px}
-.ls{width:10px;height:10px;display:inline-block}
-.lc{border-radius:50%}.lsq{border-radius:1px}.ld{transform:rotate(45deg)}
-.net-close{position:absolute;top:10px;left:10px;font-size:10px;color:var(--text);
-  padding:4px 12px;border:1px solid var(--border);border-radius:10px;cursor:default;
-  transition:all .2s ease}
-.net-close:hover{border-color:var(--accent);color:var(--text-hi)}
-
-/* Global transition for data elements */
-.data-el{transition:opacity .25s ease,filter .25s ease,transform .25s ease,
-  box-shadow .25s ease,border-color .25s ease,background .25s ease,color .25s ease}
-
-/* PAGE SWITCHING */
-.page-container[data-active="2"] .group-card[data-page="1"]{display:none}
-.page-container[data-active="2"] .group-card[data-page="2"]{display:flex}
-.page-container[data-active="1"] .group-card[data-page="1"]{display:flex}
-.page-container[data-active="1"] .group-card[data-page="2"]{display:none}
-
-/* RESPONSIVE */
-@media(max-width:1024px){
-  .main{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,1fr)}
-  .page{overflow-y:auto}
+/* Responsive */
+@media(max-width:900px){
+  .app{grid-template-columns:1fr 1fr;grid-template-rows:auto auto 1fr auto;
+    grid-template-areas:"header header" "teams sidebar" "stage stage" "venues venues";
+    overflow-y:auto;height:auto}
 }
-@media(max-width:767px){
-  .main{grid-template-columns:1fr;grid-template-rows:auto}
-  .page{overflow-y:auto;height:auto}
-  .net-toggle{display:none}
-  .tabs{gap:2px}
-  .tab{padding:3px 8px;font-size:9px}
+@media(max-width:600px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto auto auto 1fr auto;
+    grid-template-areas:"header" "teams" "sidebar" "stage" "venues";
+    overflow-y:auto;height:auto}
 }
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="app">
   <div class="header">
-    <div class="header-left">
-      <h1>⚽ Copa do Mundo FIFA 2026</h1>
-      <div class="header-stats">
-        <div class="hstat"><b>48</b><small>Seleções</small></div>
-        <div class="hstat"><b>12</b><small>Grupos</small></div>
-        <div class="hstat"><b>72</b><small>Jogos</small></div>
-        <div class="hstat"><b>16</b><small>Estádios</small></div>
-      </div>
+    <h1>⚽ Copa do Mundo FIFA 2026</h1>
+    <div class="header-stats">
+      <div class="hstat"><b>48</b><small>Seleções</small></div>
+      <div class="hstat"><b>12</b><small>Grupos</small></div>
+      <div class="hstat"><b>72</b><small>Jogos</small></div>
+      <div class="hstat"><b>16</b><small>Estádios</small></div>
     </div>
-    <div class="tabs">
-      <div class="tab active" id="tab1" data-tab="1">Grupos A – F
-        <span class="cross-badge" id="badge1"></span>
-      </div>
-      <div class="tab" id="tab2" data-tab="2">Grupos G – L
-        <span class="cross-badge" id="badge2"></span>
-      </div>
+    <span class="header-hint">Passe o mouse para explorar · Zero cliques</span>
+  </div>
+
+  <div class="teams-panel">
+    <div class="panel-title">🏆 Seleções</div>
+    <div class="teams-grid" id="teamsGrid"></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="stage-empty" id="stageEmpty">
+      <span class="icon">⚽</span>
+      <div class="txt">Passe o mouse sobre qualquer elemento<br>para explorar a Copa do Mundo 2026</div>
     </div>
-    <div class="header-right">
-      <span class="header-hint">Hover para explorar conexões · Sem cliques</span>
-      <div class="net-toggle" id="netToggle">◈ Network</div>
+    <div class="dp" id="detailPanel"></div>
+  </div>
+
+  <div class="sidebar">
+    <div class="groups-panel">
+      <div class="panel-title">📋 Grupos</div>
+      <div class="groups-grid" id="groupsGrid"></div>
+    </div>
+    <div class="times-panel">
+      <div class="panel-title">🕐 Horários</div>
+      <div class="times-grid" id="timesGrid"></div>
     </div>
   </div>
 
-  <div class="main page-container" id="app" data-active="1"></div>
-
-  <div class="filters" id="filtersBar"></div>
-</div>
-
-<!-- NETWORK OVERLAY -->
-<div class="network-overlay" id="networkOverlay">
-  <canvas id="networkCanvas"></canvas>
-  <div class="net-close" id="netClose">✕ Fechar</div>
-  <div class="net-legend">
-    <div><span class="ls lc" style="background:var(--accent)"></span> Seleções</div>
-    <div><span class="ls lsq" style="background:var(--accent2)"></span> Estádios</div>
-    <div><span class="ls ld" style="background:#f59e0b"></span> Cidades</div>
+  <div class="venues-bar" id="venuesBar">
+    <span class="vl">📍 Estádios</span>
   </div>
 </div>
 
@@ -229,10 +240,6 @@ const GROUPS_DATA = {
   L:{teams:[{code:"GER",name:"Alemanha",flag:"🇩🇪"},{code:"CHI",name:"Chile",flag:"🇨🇱"},{code:"KSA",name:"A.Saudita",flag:"🇸🇦"},{code:"PAR",name:"Paraguai",flag:"🇵🇾"}]}
 };
 
-const PAGE1_GROUPS=new Set(["A","B","C","D","E","F"]);
-const PAGE2_GROUPS=new Set(["G","H","I","J","K","L"]);
-function groupPage(g){return PAGE1_GROUPS.has(g)?1:2;}
-
 const CITY_COLORS={"east-rutherford":"#3b82f6","los-angeles":"#a855f7","dallas":"#f97316",
   "miami":"#06b6d4","houston":"#ef4444","atlanta":"#10b981","filadelfia":"#6366f1",
   "seattle":"#14b8a6","foxborough":"#ec4899","kansas-city":"#f59e0b","santa-clara":"#c084fc",
@@ -240,31 +247,36 @@ const CITY_COLORS={"east-rutherford":"#3b82f6","los-angeles":"#a855f7","dallas":
   "vancouver":"#dc2626","toronto":"#d946ef"};
 
 const VENUES=[
-  {id:"metlife",name:"MetLife",city:"East Rutherford",country:"EUA"},
-  {id:"sofi",name:"SoFi",city:"Los Angeles",country:"EUA"},
-  {id:"att",name:"AT&T",city:"Dallas",country:"EUA"},
-  {id:"hardrock",name:"Hard Rock",city:"Miami",country:"EUA"},
-  {id:"nrg",name:"NRG",city:"Houston",country:"EUA"},
-  {id:"mercedesbenz",name:"Mercedes-Benz",city:"Atlanta",country:"EUA"},
-  {id:"lincoln",name:"Lincoln Field",city:"Filadélfia",country:"EUA"},
+  {id:"metlife",name:"MetLife Stadium",city:"East Rutherford",country:"EUA"},
+  {id:"sofi",name:"SoFi Stadium",city:"Los Angeles",country:"EUA"},
+  {id:"att",name:"AT&T Stadium",city:"Dallas",country:"EUA"},
+  {id:"hardrock",name:"Hard Rock Stadium",city:"Miami",country:"EUA"},
+  {id:"nrg",name:"NRG Stadium",city:"Houston",country:"EUA"},
+  {id:"mercedesbenz",name:"Mercedes-Benz Stadium",city:"Atlanta",country:"EUA"},
+  {id:"lincoln",name:"Lincoln Financial Field",city:"Filadélfia",country:"EUA"},
   {id:"lumen",name:"Lumen Field",city:"Seattle",country:"EUA"},
-  {id:"gillette",name:"Gillette",city:"Foxborough",country:"EUA"},
-  {id:"arrowhead",name:"Arrowhead",city:"Kansas City",country:"EUA"},
-  {id:"levis",name:"Levi's",city:"Santa Clara",country:"EUA"},
-  {id:"azteca",name:"Azteca",city:"Cidade do México",country:"MX"},
-  {id:"akron",name:"Akron",city:"Guadalajara",country:"MX"},
-  {id:"bbva",name:"BBVA",city:"Monterrey",country:"MX"},
+  {id:"gillette",name:"Gillette Stadium",city:"Foxborough",country:"EUA"},
+  {id:"arrowhead",name:"Arrowhead Stadium",city:"Kansas City",country:"EUA"},
+  {id:"levis",name:"Levi's Stadium",city:"Santa Clara",country:"EUA"},
+  {id:"azteca",name:"Estádio Azteca",city:"Cidade do México",country:"MX"},
+  {id:"akron",name:"Estádio Akron",city:"Guadalajara",country:"MX"},
+  {id:"bbva",name:"Estádio BBVA",city:"Monterrey",country:"MX"},
   {id:"bcplace",name:"BC Place",city:"Vancouver",country:"CA"},
   {id:"bmo",name:"BMO Field",city:"Toronto",country:"CA"}
 ];
 
-// Build team lookup for flags
-const TEAM_MAP={};
-Object.values(GROUPS_DATA).forEach(g=>g.teams.forEach(t=>{TEAM_MAP[t.code]=t;}));
+// Lookups
+const TM={};const TG={};
+Object.entries(GROUPS_DATA).forEach(([gk,g])=>{
+  g.teams.forEach(t=>{TM[t.code]=t;TG[t.code]=gk;});
+});
 
 function slug(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-")}
 function cc(cs){return CITY_COLORS[cs]||"#556"}
+const MO=["","Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+function fd(d){const p=d.split("-");return parseInt(p[2])+" "+MO[parseInt(p[1])];}
 
+// Generate matches
 const MATCHES=[];
 (function(){
   const sched=[
@@ -290,324 +302,262 @@ const MATCHES=[];
   });});
 })();
 
-// ===================== PAGE STATE =====================
-let activePage=1;
-const app=document.getElementById("app");
-const tab1=document.getElementById("tab1");
-const tab2=document.getElementById("tab2");
-const badge1=document.getElementById("badge1");
-const badge2=document.getElementById("badge2");
-
-function switchPage(p){
-  if(p===activePage)return;
-  activePage=p;
-  app.setAttribute("data-active",p);
-  tab1.classList.toggle("active",p===1);
-  tab2.classList.toggle("active",p===2);
-  badge1.style.display="none";
-  badge2.style.display="none";
-}
-
-tab1.addEventListener("mouseenter",()=>switchPage(1));
-tab2.addEventListener("mouseenter",()=>switchPage(2));
-
-// ===================== RENDER =====================
-const MO=["","Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-function fd(d){const p=d.split("-");return parseInt(p[2])+" "+MO[parseInt(p[1])];}
-
-function render(){
-  let h="";
-  Object.entries(GROUPS_DATA).forEach(([gk,g])=>{
-    const gm=MATCHES.filter(m=>m.group===gk);
-    const tc=g.teams.map(t=>t.code).join(",");
-    const pg=groupPage(gk);
-    h+=`<div class="group-card data-el" data-group="${gk}" data-teams="${tc}" data-page="${pg}">`;
-    h+=`<div class="gh"><span class="gl">Grupo ${gk}</span><span class="gt">${g.teams.map(t=>t.flag).join(" ")}</span></div>`;
-    h+=`<div class="tr">`;
-    g.teams.forEach(t=>{
-      h+=`<div class="tb data-el" data-teams="${t.code}" data-group="${gk}"><span class="tf">${t.flag}</span>${t.name}</div>`;
+// ===================== RENDER PANELS =====================
+function renderTeams(){
+  const g=document.getElementById("teamsGrid");let h="";
+  Object.entries(GROUPS_DATA).forEach(([gk,gr])=>{
+    h+=`<span class="tgl" data-group="${gk}">${gk}</span>`;
+    gr.teams.forEach(t=>{
+      h+=`<div class="ti" data-team="${t.code}" data-group="${gk}">
+        <span class="fl">${t.flag}</span><span>${t.name}</span></div>`;
     });
-    h+=`</div><div class="ml">`;
-    gm.forEach(m=>{
-      const c=cc(m.cs);
-      h+=`<div class="mc data-el" style="--city-color:${c}"
-        data-teams="${m.t1},${m.t2}" data-group="${m.group}"
-        data-stadium="${m.stad}" data-city="${m.cs}"
-        data-date="${m.date}" data-time="${m.time}">
-        <div class="mt"><span class="f">${m.f1}</span>${TEAM_MAP[m.t1].name}<span class="mv">×</span>${TEAM_MAP[m.t2].name}<span class="f">${m.f2}</span></div>
-        <div class="mm"><span>${fd(m.date)}</span><span>${m.time}</span><span class="ct" style="--city-color:${c}">${m.stadName}</span></div>
-      </div>`;
-    });
-    h+=`</div></div>`;
   });
-  app.innerHTML=h;
+  g.innerHTML=h;
 }
 
-function renderFilters(){
-  const bar=document.getElementById("filtersBar");
-  const cities=[...new Set(MATCHES.map(m=>m.city))];
-  const dates=[...new Set(MATCHES.map(m=>m.date))].sort();
-  const stadiums=[...new Set(MATCHES.map(m=>m.stad))];
+function renderGroups(){
+  const g=document.getElementById("groupsGrid");let h="";
+  Object.entries(GROUPS_DATA).forEach(([gk,gr])=>{
+    h+=`<div class="gi" data-group="${gk}">
+      <span class="gl">Grupo ${gk}</span>
+      <span class="gf">${gr.teams.map(t=>t.flag).join(" ")}</span>
+    </div>`;
+  });
+  g.innerHTML=h;
+}
+
+function renderTimes(){
+  const g=document.getElementById("timesGrid");
   const times=[...new Set(MATCHES.map(m=>m.time))].sort();
+  let h="";
+  times.forEach(t=>{h+=`<div class="tmi" data-time="${t}">${t}</div>`;});
+  g.innerHTML=h;
+}
 
-  let h=`<div class="fs"><span class="fl">📍 Cidades</span><div class="fc">`;
-  cities.forEach(c=>{const cs=slug(c),col=cc(cs);
-    h+=`<div class="ch cc data-el" data-city="${cs}" style="--city-color:${col}">${c}</div>`;
+function renderVenues(){
+  const bar=document.getElementById("venuesBar");
+  let h='<span class="vl">📍 Estádios</span>';
+  VENUES.forEach(v=>{
+    const cs=slug(v.city),col=cc(cs);
+    h+=`<div class="vi" data-stad="${v.id}" data-city="${cs}" style="--city-color:${col}">
+      <span class="vn">${v.name.replace(/ Stadium| Field/g,"")}</span>
+      <span class="vc">${v.city}</span>
+    </div>`;
   });
-  h+=`</div></div>`;
-
-  h+=`<div class="fs"><span class="fl">🏟 Estádios</span><div class="fc">`;
-  stadiums.forEach(s=>{const v=VENUES.find(x=>x.id===s);const cs=slug(v.city),col=cc(cs);
-    h+=`<div class="ch sc data-el" data-stadium="${s}" data-city="${cs}" style="--city-color:${col}">${v.name}</div>`;
-  });
-  h+=`</div></div>`;
-
-  h+=`<div class="fs"><span class="fl">📅</span><div class="fc">`;
-  dates.forEach(d=>{const p=d.split("-");
-    h+=`<div class="ch dc data-el" data-date="${d}">${parseInt(p[2])}/${p[1].slice(1)}</div>`;
-  });
-  h+=`</div></div>`;
-
-  h+=`<div class="fs"><span class="fl">🕐</span><div class="fc">`;
-  times.forEach(t=>{
-    h+=`<div class="ch tc data-el" data-time="${t}">${t}</div>`;
-  });
-  h+=`</div></div>`;
-
   bar.innerHTML=h;
 }
 
-// ===================== HIGHLIGHT SYSTEM =====================
-function setupHighlight(){
-  const fb=document.getElementById("filtersBar");
-  const root=document.querySelector(".page");
-  const AS=["data-teams","data-group","data-stadium","data-city","data-date","data-time"];
+// ===================== DETAIL PANEL =====================
+const detailPanel=document.getElementById("detailPanel");
+const stageEmpty=document.getElementById("stageEmpty");
 
-  function gA(el){const r={};AS.forEach(a=>{const v=el.getAttribute(a);if(v)r[a]=v;});return r;}
-
-  function expand(ha){
-    const hT=ha["data-teams"]?ha["data-teams"].split(","):[];
-    const hS=ha["data-stadium"]||null,hC=ha["data-city"]||null;
-    const hD=ha["data-date"]||null,hTi=ha["data-time"]||null,hG=ha["data-group"]||null;
-    const isMatch=hT.length>0&&hS&&hD;
-    const isTeam=hT.length>0&&hT.length<=2&&!hS&&!hD;
-    const isGroup=hG&&hT.length>2;
-    const isVenue=(hS||hC)&&hT.length===0;
-    const isDate=hD&&hT.length===0&&!hS;
-    const isTime=hTi&&hT.length===0&&!hS&&!hD;
-    let rm;
-    if(isMatch) rm=MATCHES.filter(m=>m.stad===hS&&m.date===hD&&m.time===hTi&&hT.some(t=>m.t1===t||m.t2===t));
-    else if(isTeam) rm=MATCHES.filter(m=>hT.some(t=>m.t1===t||m.t2===t));
-    else if(isGroup) rm=MATCHES.filter(m=>m.group===hG);
-    else if(isVenue&&hS) rm=MATCHES.filter(m=>m.stad===hS);
-    else if(isVenue&&hC) rm=MATCHES.filter(m=>m.cs===hC);
-    else if(isDate) rm=MATCHES.filter(m=>m.date===hD);
-    else if(isTime) rm=MATCHES.filter(m=>m.time===hTi);
-    else rm=[];
-
-    const e={teams:new Set(hT),stads:new Set(hS?[hS]:[]),cities:new Set(hC?[hC]:[]),
-      dates:new Set(hD?[hD]:[]),times:new Set(hTi?[hTi]:[]),groups:new Set(hG?[hG]:[]),sigs:new Set()};
-    rm.forEach(m=>{e.teams.add(m.t1);e.teams.add(m.t2);e.stads.add(m.stad);e.cities.add(m.cs);
-      e.dates.add(m.date);e.times.add(m.time);e.groups.add(m.group);
-      e.sigs.add(`${m.t1},${m.t2}|${m.stad}|${m.date}|${m.time}`);});
-    return e;
-  }
-
-  function isRel(ea,ex){
-    const isMC=ea["data-teams"]&&ea["data-stadium"]&&ea["data-date"];
-    const isTB=ea["data-teams"]&&!ea["data-stadium"]&&!ea["data-date"];
-    const isGC=ea["data-group"]&&ea["data-teams"]&&ea["data-teams"].split(",").length>2;
-    if(isMC) return ex.sigs.has(`${ea["data-teams"]}|${ea["data-stadium"]}|${ea["data-date"]}|${ea["data-time"]}`);
-    if(isGC) return ex.groups.has(ea["data-group"]);
-    if(isTB) return ea["data-teams"].split(",").some(t=>ex.teams.has(t));
-    if(ea["data-stadium"]&&ex.stads.has(ea["data-stadium"])) return true;
-    if(ea["data-city"]&&ex.cities.has(ea["data-city"])) return true;
-    if(ea["data-date"]&&ex.dates.has(ea["data-date"])) return true;
-    if(ea["data-time"]&&ex.times.has(ea["data-time"])) return true;
-    return false;
-  }
-
-  // Auto-navigate: check if highlighted matches span the other page
-  let navTimer=null;
-  function checkCrossPage(ex){
-    // Count matches on each page
-    let p1=0,p2=0;
-    ex.sigs.forEach(sig=>{
-      const parts=sig.split("|");
-      const teams=parts[0].split(",");
-      // Find which group this match belongs to
-      for(const m of MATCHES){
-        if(m.t1===teams[0]&&m.t2===teams[1]&&m.stad===parts[1]&&m.date===parts[2]&&m.time===parts[3]){
-          if(groupPage(m.group)===1) p1++; else p2++;
-          break;
-        }
-      }
-    });
-
-    // Also count by groups for group/team hovers
-    let gp1=0,gp2=0;
-    ex.groups.forEach(g=>{if(groupPage(g)===1)gp1++;else gp2++;});
-
-    const otherPage=activePage===1?2:1;
-    const otherMatches=activePage===1?p2:p1;
-    const otherGroups=activePage===1?gp2:gp1;
-
-    // Show badge on other page's tab
-    if(otherMatches>0||otherGroups>0){
-      const badge=activePage===1?badge2:badge1;
-      const count=otherMatches||otherGroups;
-      badge.textContent=`${count} ${otherMatches>0?"jogo"+(count>1?"s":""):"grupo"+(count>1?"s":"")} →`;
-      badge.style.display="block";
-
-      // Auto-navigate after 600ms debounce
-      if(navTimer)clearTimeout(navTimer);
-      navTimer=setTimeout(()=>{switchPage(otherPage);},600);
-    }else{
-      badge1.style.display="none";
-      badge2.style.display="none";
-      if(navTimer){clearTimeout(navTimer);navTimer=null;}
-    }
-  }
-
-  let cur=null,raf=null;
-  function doHL(target){
-    const el=target.closest(".data-el");
-    if(!el){clr();return;}
-    if(el===cur)return;
-    cur=el;
-    if(raf)cancelAnimationFrame(raf);
-    raf=requestAnimationFrame(()=>{
-      const ha=gA(el);
-      const ex=expand(ha);
-      // Apply highlight/dim to ALL elements (both pages)
-      root.querySelectorAll(".data-el").forEach(e=>{
-        const ea=gA(e);
-        if(isRel(ea,ex)){e.classList.add("highlighted");e.classList.remove("dimmed");}
-        else{e.classList.add("dimmed");e.classList.remove("highlighted");}
-      });
-      // Check cross-page navigation
-      checkCrossPage(ex);
-    });
-  }
-  function clr(){
-    cur=null;if(raf)cancelAnimationFrame(raf);
-    if(navTimer){clearTimeout(navTimer);navTimer=null;}
-    badge1.style.display="none";
-    badge2.style.display="none";
-    raf=requestAnimationFrame(()=>{
-      root.querySelectorAll(".data-el").forEach(e=>e.classList.remove("highlighted","dimmed"));
-    });
-  }
-
-  root.addEventListener("mouseover",e=>doHL(e.target));
-  root.addEventListener("mouseleave",clr);
-  root.addEventListener("touchstart",e=>doHL(e.target),{passive:true});
-  document.addEventListener("touchstart",e=>{if(!root.contains(e.target))clr();},{passive:true});
+function showDetail(html){
+  detailPanel.innerHTML=html;detailPanel.scrollTop=0;
+  detailPanel.classList.add("visible");stageEmpty.classList.add("hidden");
+}
+function hideDetail(){
+  detailPanel.classList.remove("visible");stageEmpty.classList.remove("hidden");
 }
 
-// ===================== NETWORK =====================
-function setupNetwork(){
-  const toggle=document.getElementById("netToggle");
-  const overlay=document.getElementById("networkOverlay");
-  const close=document.getElementById("netClose");
-  const canvas=document.getElementById("networkCanvas");
-  const ctx=canvas.getContext("2d");
-  let active=false,nodes=[],edges=[],hov=null;
+function matchCardHTML(m,i,showGroup){
+  const t1=TM[m.t1],t2=TM[m.t2],v=VENUES.find(x=>x.id===m.stad),c=cc(m.cs);
+  return `<div class="mc" style="--city-color:${c};--i:${i}">
+    <div class="mt"><span class="mf">${t1.flag}</span>${t1.name}
+      <span class="vs">×</span>${t2.name}<span class="mf">${t2.flag}</span></div>
+    <div class="mm"><span class="md">${fd(m.date)}</span><span>${m.time}</span>
+      <span class="mv">${v.name.replace(/ Stadium| Field/g,"")} · ${v.city}</span>
+      ${showGroup?`<span>Grupo ${m.group}</span>`:""}</div>
+  </div>`;
+}
 
-  function show(){
-    active=true;toggle.classList.add("active");overlay.classList.add("visible");
-    resize();build();draw();
-  }
-  function hide(){active=false;toggle.classList.remove("active");overlay.classList.remove("visible");}
-
-  let tt=null;
-  toggle.addEventListener("mouseenter",()=>{tt=setTimeout(show,400);});
-  toggle.addEventListener("mouseleave",()=>{if(tt){clearTimeout(tt);tt=null;}});
-  close.addEventListener("mouseenter",()=>{setTimeout(hide,300);});
-
-  function resize(){
-    const dpr=window.devicePixelRatio||1;
-    canvas.width=window.innerWidth*dpr;canvas.height=window.innerHeight*dpr;
-    canvas.style.width=window.innerWidth+"px";canvas.style.height=window.innerHeight+"px";
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-
-  function build(){
-    nodes=[];edges=[];
-    const W=window.innerWidth,H=window.innerHeight,cx=W/2,cy=H/2;
-    const tp={},sp={};
-    const gks=Object.keys(GROUPS_DATA);
-    gks.forEach((gk,gi)=>{
-      const ga=(gi/gks.length)*Math.PI*2-Math.PI/2;
-      const gcx=cx+Math.cos(ga)*Math.min(W,H)*0.34;
-      const gcy=cy+Math.sin(ga)*H*0.34;
-      GROUPS_DATA[gk].teams.forEach((t,ti)=>{
-        const a=ga+(ti-1.5)*0.25,r=Math.min(W,H)*0.06;
-        nodes.push({type:"team",id:t.code,label:t.flag+" "+t.name,
-          x:gcx+Math.cos(a+ti*.35)*r,y:gcy+Math.sin(a+ti*.35)*r,group:gk});
-        tp[t.code]=nodes.length-1;
-      });
-    });
-    const us=new Set();let si=0;
-    const pa=[0.2,1.1,2.3,3.0,3.8,4.5,5.2,0.7,1.6,2.8,3.5,4.1,5.0,5.8,0.4,1.9];
-    MATCHES.forEach(m=>{
-      if(us.has(m.stad))return;us.add(m.stad);
-      const a=pa[si%pa.length];si++;const d=Math.min(W,H)*0.16;
-      nodes.push({type:"stadium",id:m.stad,label:m.stadName,
-        x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d,color:cc(m.cs)});
-      sp[m.stad]=nodes.length-1;
-    });
-    for(let i=0;i<100;i++){for(let a=0;a<nodes.length;a++){for(let b=a+1;b<nodes.length;b++){
-      const n=nodes[a],m=nodes[b],dx=m.x-n.x,dy=m.y-n.y;
-      const dist=Math.sqrt(dx*dx+dy*dy)||1,min=n.type==="team"&&m.type==="team"?45:35;
-      if(dist<min){const f=(min-dist)*.25,fx=dx/dist*f,fy=dy/dist*f;
-        n.x-=fx;n.y-=fy;m.x+=fx;m.y+=fy;}
-    }nodes[a].x=Math.max(40,Math.min(W-40,nodes[a].x));
-      nodes[a].y=Math.max(40,Math.min(H-40,nodes[a].y));}}
-    MATCHES.forEach(m=>{const s=sp[m.stad],t1=tp[m.t1],t2=tp[m.t2];const col=cc(m.cs);
-      if(s!==undefined&&t1!==undefined)edges.push({from:t1,to:s,teams:`${m.t1},${m.t2}`,stad:m.stad,color:col});
-      if(s!==undefined&&t2!==undefined)edges.push({from:t2,to:s,teams:`${m.t1},${m.t2}`,stad:m.stad,color:col});
-    });
-  }
-
-  canvas.addEventListener("mousemove",e=>{
-    const mx=e.clientX,my=e.clientY;hov=null;
-    for(const n of nodes){if(Math.hypot(n.x-mx,n.y-my)<18){hov=n;break;}}
-    if(active)draw();
+function teamDetail(code){
+  const t=TM[code],gk=TG[code];
+  const ms=MATCHES.filter(m=>m.t1===code||m.t2===code);
+  let h=`<div class="dh"><span class="big">${t.flag}</span><div class="info">
+    <div class="title">${t.name}</div>
+    <div class="sub">Grupo ${gk} · ${ms.length} jogos na fase de grupos</div>
+  </div></div>`;
+  h+='<div class="ds"><div class="ds-title">Adversários</div><div class="d-teams">';
+  const opps=new Set();
+  ms.forEach(m=>{opps.add(m.t1===code?m.t2:m.t1);});
+  opps.forEach(c=>{const o=TM[c];
+    h+=`<div class="d-chip"><span class="cf">${o.flag}</span>${o.name}</div>`;
   });
-  canvas.addEventListener("mouseleave",()=>{hov=null;if(active)draw();});
+  h+='</div></div>';
+  h+='<div class="ds"><div class="ds-title">Jogos</div>';
+  ms.forEach((m,i)=>{h+=matchCardHTML(m,i,false);});
+  h+='</div>';
+  showDetail(h);
+}
 
-  function eRel(edge){if(!hov)return false;
-    if(hov.type==="team")return edge.teams.split(",").includes(hov.id);
-    if(hov.type==="stadium")return edge.stad===hov.id;return false;}
+function groupDetail(gk){
+  const g=GROUPS_DATA[gk];
+  const ms=MATCHES.filter(m=>m.group===gk);
+  let h=`<div class="dh"><div class="info">
+    <div class="title">Grupo ${gk}</div>
+    <div class="sub">${g.teams.length} seleções · ${ms.length} jogos</div>
+  </div></div>`;
+  // Teams
+  h+='<div class="ds"><div class="ds-title">Seleções</div><div class="d-teams">';
+  g.teams.forEach(t=>{
+    h+=`<div class="d-chip"><span class="cf">${t.flag}</span>${t.name}</div>`;
+  });
+  h+='</div></div>';
+  // Standings
+  h+='<div class="ds"><div class="ds-title">Classificação</div>';
+  h+='<table class="st"><tr><th>#</th><th>Seleção</th><th>J</th><th>V</th><th>E</th><th>D</th><th>Pts</th></tr>';
+  g.teams.forEach((t,i)=>{
+    h+=`<tr><td>${i+1}</td><td>${t.flag} ${t.name}</td><td>0</td><td>0</td><td>0</td><td>0</td><td class="pts">0</td></tr>`;
+  });
+  h+='</table></div>';
+  // Matches
+  h+='<div class="ds"><div class="ds-title">Jogos</div>';
+  ms.forEach((m,i)=>{h+=matchCardHTML(m,i,false);});
+  h+='</div>';
+  showDetail(h);
+}
 
-  function draw(){
-    const W=window.innerWidth,H=window.innerHeight;ctx.clearRect(0,0,W,H);
-    edges.forEach(e=>{const f=nodes[e.from],t=nodes[e.to];const rel=hov&&eRel(e);
-      ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(t.x,t.y);
-      ctx.strokeStyle=rel?e.color+"99":`rgba(100,100,150,${hov?0.02:0.08})`;
-      ctx.lineWidth=rel?2:0.5;ctx.stroke();});
-    nodes.forEach(n=>{const conn=!hov||n===hov||edges.some(e=>eRel(e)&&(nodes[e.from]===n||nodes[e.to]===n));
-      const a=hov?(conn?1:0.06):0.8;let sz=n.type==="team"?14:10;
-      if(hov&&n===hov)sz+=5;else if(hov&&conn)sz+=2;
-      ctx.globalAlpha=a;
-      if(n.type==="team"){ctx.beginPath();ctx.arc(n.x,n.y,sz,0,Math.PI*2);
-        ctx.fillStyle="#8b5cf6";ctx.fill();ctx.font=`${Math.max(8,sz*.7)}px system-ui`;
-        ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText(n.label,n.x,n.y);
-      }else{ctx.fillStyle=n.color||"#06b6d4";ctx.fillRect(n.x-sz/2,n.y-sz/2,sz,sz);}
-      if(a>.3){ctx.font="9px system-ui";ctx.textAlign="center";
-        ctx.fillStyle=`rgba(200,210,230,${a})`;ctx.fillText(n.label,n.x,n.y+sz+10);}
-      ctx.globalAlpha=1;});
-    if(hov){ctx.font="bold 12px system-ui";ctx.fillStyle="#fff";ctx.textAlign="left";ctx.fillText(hov.label,12,H-12);}
-  }
-  window.addEventListener("resize",()=>{if(active){resize();build();draw();}});
+function venueDetail(stadId){
+  const v=VENUES.find(x=>x.id===stadId);
+  const cs=slug(v.city),c=cc(cs);
+  const ms=MATCHES.filter(m=>m.stad===stadId);
+  let h=`<div class="dh"><span class="big">🏟</span><div class="info">
+    <div class="title">${v.name}</div>
+    <div class="sub" style="color:${c}">${v.city}, ${v.country} · ${ms.length} jogos</div>
+  </div></div>`;
+  // Teams playing here
+  const teams=new Set();ms.forEach(m=>{teams.add(m.t1);teams.add(m.t2);});
+  h+='<div class="ds"><div class="ds-title">Seleções que jogam aqui</div><div class="d-teams">';
+  teams.forEach(code=>{const t=TM[code];
+    h+=`<div class="d-chip"><span class="cf">${t.flag}</span>${t.name}</div>`;
+  });
+  h+='</div></div>';
+  h+='<div class="ds"><div class="ds-title">Jogos</div>';
+  ms.forEach((m,i)=>{h+=matchCardHTML(m,i,true);});
+  h+='</div>';
+  showDetail(h);
+}
+
+function timeDetail(time){
+  const ms=MATCHES.filter(m=>m.time===time);
+  let h=`<div class="dh"><span class="big">🕐</span><div class="info">
+    <div class="title">${time}</div>
+    <div class="sub">${ms.length} jogos neste horário</div>
+  </div></div>`;
+  // Group by date
+  const byDate={};
+  ms.forEach(m=>{if(!byDate[m.date])byDate[m.date]=[];byDate[m.date].push(m);});
+  let i=0;
+  Object.keys(byDate).sort().forEach(date=>{
+    h+=`<div class="ds"><div class="ds-title">${fd(date)}</div>`;
+    byDate[date].forEach(m=>{h+=matchCardHTML(m,i++,true);});
+    h+='</div>';
+  });
+  showDetail(h);
+}
+
+// ===================== HIGHLIGHT SYSTEM =====================
+function getRelated(type,val){
+  let ms;
+  if(type==="team") ms=MATCHES.filter(m=>m.t1===val||m.t2===val);
+  else if(type==="group") ms=MATCHES.filter(m=>m.group===val);
+  else if(type==="stad") ms=MATCHES.filter(m=>m.stad===val);
+  else if(type==="city") ms=MATCHES.filter(m=>m.cs===val);
+  else if(type==="time") ms=MATCHES.filter(m=>m.time===val);
+  else ms=[];
+  const r={teams:new Set(),groups:new Set(),times:new Set(),stads:new Set(),cities:new Set()};
+  ms.forEach(m=>{
+    r.teams.add(m.t1);r.teams.add(m.t2);r.groups.add(m.group);
+    r.times.add(m.time);r.stads.add(m.stad);r.cities.add(m.cs);
+  });
+  return r;
+}
+
+function applyHL(r){
+  document.querySelectorAll(".ti").forEach(el=>{
+    const m=r.teams.has(el.dataset.team);
+    el.classList.toggle("highlighted",m);el.classList.toggle("dimmed",!m);
+  });
+  document.querySelectorAll(".tgl").forEach(el=>{
+    const m=r.groups.has(el.dataset.group);
+    el.classList.toggle("highlighted",m);el.classList.toggle("dimmed",!m);
+  });
+  document.querySelectorAll(".gi").forEach(el=>{
+    const m=r.groups.has(el.dataset.group);
+    el.classList.toggle("highlighted",m);el.classList.toggle("dimmed",!m);
+  });
+  document.querySelectorAll(".tmi").forEach(el=>{
+    const m=r.times.has(el.dataset.time);
+    el.classList.toggle("highlighted",m);el.classList.toggle("dimmed",!m);
+  });
+  document.querySelectorAll(".vi").forEach(el=>{
+    const m=r.stads.has(el.dataset.stad);
+    el.classList.toggle("highlighted",m);el.classList.toggle("dimmed",!m);
+  });
+}
+
+function clearHL(){
+  document.querySelectorAll(".highlighted,.dimmed").forEach(el=>{
+    el.classList.remove("highlighted","dimmed");
+  });
+}
+
+// ===================== EVENTS =====================
+let hideTimer=null;
+function scheduleHide(){
+  hideTimer=setTimeout(()=>{hideDetail();clearHL();},300);
+}
+function cancelHide(){
+  if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+}
+
+function setupEvents(){
+  // Team items
+  document.querySelectorAll(".ti").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      cancelHide();applyHL(getRelated("team",el.dataset.team));teamDetail(el.dataset.team);
+    });
+    el.addEventListener("mouseleave",scheduleHide);
+  });
+  // Group labels in teams panel
+  document.querySelectorAll(".tgl").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      cancelHide();applyHL(getRelated("group",el.dataset.group));groupDetail(el.dataset.group);
+    });
+    el.addEventListener("mouseleave",scheduleHide);
+  });
+  // Group items in sidebar
+  document.querySelectorAll(".gi").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      cancelHide();applyHL(getRelated("group",el.dataset.group));groupDetail(el.dataset.group);
+    });
+    el.addEventListener("mouseleave",scheduleHide);
+  });
+  // Time items
+  document.querySelectorAll(".tmi").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      cancelHide();applyHL(getRelated("time",el.dataset.time));timeDetail(el.dataset.time);
+    });
+    el.addEventListener("mouseleave",scheduleHide);
+  });
+  // Venue items
+  document.querySelectorAll(".vi").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      cancelHide();applyHL(getRelated("stad",el.dataset.stad));venueDetail(el.dataset.stad);
+    });
+    el.addEventListener("mouseleave",scheduleHide);
+  });
+  // Detail panel — keep alive when hovering
+  detailPanel.addEventListener("mouseenter",cancelHide);
+  detailPanel.addEventListener("mouseleave",scheduleHide);
 }
 
 // ===================== INIT =====================
-render();
-renderFilters();
-setupHighlight();
-setupNetwork();
+renderTeams();
+renderGroups();
+renderTimes();
+renderVenues();
+setupEvents();
 </script>
 </body>
 </html>
