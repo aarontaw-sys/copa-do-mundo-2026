@@ -133,6 +133,19 @@ html,body{height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-ser
   background:rgba(139,92,246,0.1);transform:scale(1.05);z-index:2;
   box-shadow:0 0 15px var(--glow)}
 .gi.dimmed{opacity:.1;filter:blur(0.3px)}
+.days-panel{background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:8px;display:flex;flex-direction:column;overflow:visible}
+.days-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;
+  align-content:space-evenly;height:100%}
+.di{display:flex;align-items:center;justify-content:center;
+  padding:4px 2px;border-radius:6px;cursor:default;
+  background:var(--card2);border:1px solid var(--border);
+  font-size:10px;font-weight:600;color:var(--text2);transition:all .25s ease}
+.di:hover,.di.highlighted{border-color:var(--accent);
+  color:var(--text-hi);background:rgba(139,92,246,0.1);
+  transform:scale(1.08);z-index:2;position:relative;
+  box-shadow:0 0 10px var(--glow)}
+.di.dimmed{opacity:.1;filter:blur(0.3px)}
 .times-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
 .tmi{display:flex;align-items:center;justify-content:center;
   padding:8px;border-radius:8px;cursor:default;
@@ -191,6 +204,7 @@ html,body{height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-ser
       <div class="hstat"><b>48</b><small>Seleções</small></div>
       <div class="hstat"><b>12</b><small>Grupos</small></div>
       <div class="hstat"><b>72</b><small>Jogos</small></div>
+      <div class="hstat"><b>18</b><small>Dias</small></div>
       <div class="hstat"><b>16</b><small>Estádios</small></div>
     </div>
     <span class="header-hint">Passe o mouse para explorar · Zero cliques</span>
@@ -213,6 +227,10 @@ html,body{height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-ser
     <div class="groups-panel">
       <div class="panel-title">📋 Grupos</div>
       <div class="groups-grid" id="groupsGrid"></div>
+    </div>
+    <div class="days-panel" style="flex:1">
+      <div class="panel-title">📅 Dias</div>
+      <div class="days-grid" id="daysGrid"></div>
     </div>
     <div class="times-panel">
       <div class="panel-title">🕐 Horários</div>
@@ -345,6 +363,14 @@ function renderTimes(){
   g.innerHTML=h;
 }
 
+function renderDays(){
+  const g=document.getElementById("daysGrid");
+  const days=[...new Set(MATCHES.map(m=>m.date))].sort();
+  let h="";
+  days.forEach(d=>{h+=`<div class="di" data-date="${d}">${fd(d)}</div>`;});
+  g.innerHTML=h;
+}
+
 function renderVenues(){
   const bar=document.getElementById("venuesBar");
   let h='<span class="vl">📍 Estádios</span>';
@@ -467,6 +493,26 @@ function timeDetail(time){
   showDetail(h);
 }
 
+function dayDetail(date){
+  const ms=MATCHES.filter(m=>m.date===date);
+  const groups=new Set(ms.map(m=>m.group));
+  let h=`<div class="dh"><span class="big">📅</span><div class="info">
+    <div class="title">${fd(date)}</div>
+    <div class="sub">${ms.length} jogos · Grupos ${[...groups].sort().join(", ")}</div>
+  </div></div>`;
+  // Teams playing this day
+  const teams=new Set();ms.forEach(m=>{teams.add(m.t1);teams.add(m.t2);});
+  h+='<div class="ds"><div class="ds-title">Seleções em campo</div><div class="d-teams">';
+  teams.forEach(code=>{const t=TM[code];
+    h+=`<div class="d-chip">${fi(code,18)}${t.name}</div>`;
+  });
+  h+='</div></div>';
+  h+='<div class="ds"><div class="ds-title">Jogos</div>';
+  ms.forEach((m,i)=>{h+=matchCardHTML(m,i,true);});
+  h+='</div>';
+  showDetail(h);
+}
+
 // ===================== HIGHLIGHT SYSTEM =====================
 function getRelated(type,val){
   let ms;
@@ -475,11 +521,12 @@ function getRelated(type,val){
   else if(type==="stad") ms=MATCHES.filter(m=>m.stad===val);
   else if(type==="city") ms=MATCHES.filter(m=>m.cs===val);
   else if(type==="time") ms=MATCHES.filter(m=>m.time===val);
+  else if(type==="date") ms=MATCHES.filter(m=>m.date===val);
   else ms=[];
-  const r={teams:new Set(),groups:new Set(),times:new Set(),stads:new Set(),cities:new Set()};
+  const r={teams:new Set(),groups:new Set(),times:new Set(),stads:new Set(),cities:new Set(),dates:new Set()};
   ms.forEach(m=>{
     r.teams.add(m.t1);r.teams.add(m.t2);r.groups.add(m.group);
-    r.times.add(m.time);r.stads.add(m.stad);r.cities.add(m.cs);
+    r.times.add(m.time);r.stads.add(m.stad);r.cities.add(m.cs);r.dates.add(m.date);
   });
   return r;
 }
@@ -499,6 +546,10 @@ function applyHL(r){
   });
   document.querySelectorAll(".tmi").forEach(el=>{
     const m=r.times.has(el.dataset.time);
+    el.classList.toggle("highlighted",m);el.classList.toggle("dimmed",!m);
+  });
+  document.querySelectorAll(".di").forEach(el=>{
+    const m=r.dates.has(el.dataset.date);
     el.classList.toggle("highlighted",m);el.classList.toggle("dimmed",!m);
   });
   document.querySelectorAll(".vi").forEach(el=>{
@@ -544,6 +595,13 @@ function setupEvents(){
     });
     el.addEventListener("mouseleave",scheduleHide);
   });
+  // Day items
+  document.querySelectorAll(".di").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      cancelHide();applyHL(getRelated("date",el.dataset.date));dayDetail(el.dataset.date);
+    });
+    el.addEventListener("mouseleave",scheduleHide);
+  });
   // Time items
   document.querySelectorAll(".tmi").forEach(el=>{
     el.addEventListener("mouseenter",()=>{
@@ -566,6 +624,7 @@ function setupEvents(){
 // ===================== INIT =====================
 renderTeams();
 renderGroups();
+renderDays();
 renderTimes();
 renderVenues();
 setupEvents();
