@@ -118,8 +118,9 @@ html,body{height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-ser
 .sidebar{grid-area:sidebar;display:flex;flex-direction:column;gap:6px;overflow:hidden}
 .groups-panel,.times-panel{background:var(--card);border:1px solid var(--border);
   border-radius:var(--r);padding:8px}
-.groups-panel{flex:1}
-.groups-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.groups-panel{flex:1;display:flex;flex-direction:column;overflow:visible}
+.groups-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 4px;
+  align-content:space-evenly;height:100%}
 .gi{display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:6px 4px;border-radius:8px;cursor:default;
   background:var(--card2);border:1px solid var(--border);
@@ -185,7 +186,7 @@ html,body{height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-ser
 
 <div class="app">
   <div class="header">
-    <h1>⚽ Copa do Mundo FIFA 2026</h1>
+    <h1>⚽ Copa do Mundo FIFA 2026 <span style="font-size:11px;font-weight:400;opacity:.5;margin-left:8px">by Aaron T.</span></h1>
     <div class="header-stats">
       <div class="hstat"><b>48</b><small>Seleções</small></div>
       <div class="hstat"><b>12</b><small>Grupos</small></div>
