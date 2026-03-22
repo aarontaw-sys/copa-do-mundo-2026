@@ -44,21 +44,22 @@ html,body{height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-ser
   border-radius:var(--r);padding:8px;overflow:hidden;display:flex;flex-direction:column}
 .panel-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
   color:var(--accent);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.teams-grid{display:grid;grid-template-columns:16px repeat(4,1fr);gap:2px 3px;
-  align-content:start;overflow:hidden}
-.tgl{font-size:9px;font-weight:700;color:var(--accent);opacity:.4;
+.teams-grid{display:grid;grid-template-columns:20px repeat(4,1fr);gap:0 4px;
+  align-content:space-evenly;overflow:hidden;height:100%}
+.tgl{font-size:10px;font-weight:700;color:var(--accent);opacity:.4;
   display:flex;align-items:center;justify-content:center;
   cursor:default;transition:all .25s ease;border-radius:4px}
 .tgl:hover,.tgl.highlighted{opacity:1;background:rgba(139,92,246,0.1)}
 .tgl.dimmed{opacity:.08}
-.ti{display:flex;align-items:center;gap:3px;padding:2px 4px;border-radius:5px;
-  cursor:default;transition:all .25s ease;font-size:9px;color:var(--text2);
+.ti{display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:6px;
+  cursor:default;transition:all .25s ease;font-size:10px;color:var(--text2);
   border:1px solid transparent;white-space:nowrap;overflow:hidden}
 .ti:hover,.ti.highlighted{color:var(--text-hi);background:rgba(139,92,246,0.1);
   border-color:var(--accent);transform:scale(1.06);z-index:2;position:relative;
   box-shadow:0 0 10px var(--glow)}
 .ti.dimmed{opacity:.1;filter:blur(0.3px)}
 .ti .fl{font-size:12px;line-height:1;flex-shrink:0}
+.fi{display:inline-block;vertical-align:middle;border-radius:2px;object-fit:contain}
 
 /* ===== STAGE (center detail panel) ===== */
 .stage{grid-area:stage;position:relative;overflow:hidden;
@@ -271,6 +272,15 @@ Object.entries(GROUPS_DATA).forEach(([gk,g])=>{
   g.teams.forEach(t=>{TM[t.code]=t;TG[t.code]=gk;});
 });
 
+const ISO={USA:"us",URU:"uy",SRB:"rs",GHA:"gh",MEX:"mx",COL:"co",AUT:"at",CIV:"ci",
+  CAN:"ca",CRO:"hr",POL:"pl",ALG:"dz",BRA:"br",ITA:"it",SWE:"se",QAT:"qa",
+  ARG:"ar",DEN:"dk",UKR:"ua",UZB:"uz",FRA:"fr",JPN:"jp",NGA:"ng",IDN:"id",
+  ESP:"es",KOR:"kr",CMR:"cm",CRC:"cr",ENG:"gb-eng",MAR:"ma",EGY:"eg",HON:"hn",
+  POR:"pt",SEN:"sn",TUN:"tn",PAN:"pa",NED:"nl",ECU:"ec",IRN:"ir",JAM:"jm",
+  BEL:"be",SUI:"ch",AUS:"au",NZL:"nz",GER:"de",CHI:"cl",KSA:"sa",PAR:"py"};
+function fi(code,h){const w=h>20?80:40;
+  return `<img class="fi" src="https://flagcdn.com/w${w}/${ISO[code]}.png" style="height:${h||14}px" alt="">`;}
+
 function slug(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-")}
 function cc(cs){return CITY_COLORS[cs]||"#556"}
 const MO=["","Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
@@ -309,7 +319,7 @@ function renderTeams(){
     h+=`<span class="tgl" data-group="${gk}">${gk}</span>`;
     gr.teams.forEach(t=>{
       h+=`<div class="ti" data-team="${t.code}" data-group="${gk}">
-        <span class="fl">${t.flag}</span><span>${t.name}</span></div>`;
+        ${fi(t.code,12)}<span>${t.name}</span></div>`;
     });
   });
   g.innerHTML=h;
@@ -320,7 +330,7 @@ function renderGroups(){
   Object.entries(GROUPS_DATA).forEach(([gk,gr])=>{
     h+=`<div class="gi" data-group="${gk}">
       <span class="gl">Grupo ${gk}</span>
-      <span class="gf">${gr.teams.map(t=>t.flag).join(" ")}</span>
+      <span class="gf">${gr.teams.map(t=>fi(t.code,11)).join(" ")}</span>
     </div>`;
   });
   g.innerHTML=h;
@@ -362,8 +372,8 @@ function hideDetail(){
 function matchCardHTML(m,i,showGroup){
   const t1=TM[m.t1],t2=TM[m.t2],v=VENUES.find(x=>x.id===m.stad),c=cc(m.cs);
   return `<div class="mc" style="--city-color:${c};--i:${i}">
-    <div class="mt"><span class="mf">${t1.flag}</span>${t1.name}
-      <span class="vs">×</span>${t2.name}<span class="mf">${t2.flag}</span></div>
+    <div class="mt">${fi(m.t1,15)} ${t1.name}
+      <span class="vs">×</span>${t2.name} ${fi(m.t2,15)}</div>
     <div class="mm"><span class="md">${fd(m.date)}</span><span>${m.time}</span>
       <span class="mv">${v.name.replace(/ Stadium| Field/g,"")} · ${v.city}</span>
       ${showGroup?`<span>Grupo ${m.group}</span>`:""}</div>
@@ -373,7 +383,7 @@ function matchCardHTML(m,i,showGroup){
 function teamDetail(code){
   const t=TM[code],gk=TG[code];
   const ms=MATCHES.filter(m=>m.t1===code||m.t2===code);
-  let h=`<div class="dh"><span class="big">${t.flag}</span><div class="info">
+  let h=`<div class="dh"><span class="big">${fi(code,38)}</span><div class="info">
     <div class="title">${t.name}</div>
     <div class="sub">Grupo ${gk} · ${ms.length} jogos na fase de grupos</div>
   </div></div>`;
@@ -381,7 +391,7 @@ function teamDetail(code){
   const opps=new Set();
   ms.forEach(m=>{opps.add(m.t1===code?m.t2:m.t1);});
   opps.forEach(c=>{const o=TM[c];
-    h+=`<div class="d-chip"><span class="cf">${o.flag}</span>${o.name}</div>`;
+    h+=`<div class="d-chip">${fi(c,18)}${o.name}</div>`;
   });
   h+='</div></div>';
   h+='<div class="ds"><div class="ds-title">Jogos</div>';
@@ -400,14 +410,14 @@ function groupDetail(gk){
   // Teams
   h+='<div class="ds"><div class="ds-title">Seleções</div><div class="d-teams">';
   g.teams.forEach(t=>{
-    h+=`<div class="d-chip"><span class="cf">${t.flag}</span>${t.name}</div>`;
+    h+=`<div class="d-chip">${fi(t.code,18)}${t.name}</div>`;
   });
   h+='</div></div>';
   // Standings
   h+='<div class="ds"><div class="ds-title">Classificação</div>';
   h+='<table class="st"><tr><th>#</th><th>Seleção</th><th>J</th><th>V</th><th>E</th><th>D</th><th>Pts</th></tr>';
   g.teams.forEach((t,i)=>{
-    h+=`<tr><td>${i+1}</td><td>${t.flag} ${t.name}</td><td>0</td><td>0</td><td>0</td><td>0</td><td class="pts">0</td></tr>`;
+    h+=`<tr><td>${i+1}</td><td>${fi(t.code,12)} ${t.name}</td><td>0</td><td>0</td><td>0</td><td>0</td><td class="pts">0</td></tr>`;
   });
   h+='</table></div>';
   // Matches
@@ -429,7 +439,7 @@ function venueDetail(stadId){
   const teams=new Set();ms.forEach(m=>{teams.add(m.t1);teams.add(m.t2);});
   h+='<div class="ds"><div class="ds-title">Seleções que jogam aqui</div><div class="d-teams">';
   teams.forEach(code=>{const t=TM[code];
-    h+=`<div class="d-chip"><span class="cf">${t.flag}</span>${t.name}</div>`;
+    h+=`<div class="d-chip">${fi(code,18)}${t.name}</div>`;
   });
   h+='</div></div>';
   h+='<div class="ds"><div class="ds-title">Jogos</div>';
